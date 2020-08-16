@@ -2,6 +2,21 @@ const db = require("../models");
 const Car = db.cars;
 const Op = db.Sequelize.Op;
 
+const getPagination = (page, size) => {
+  const limit = size ? +size : 10;
+  const offset = page ? page * limit : 0;
+
+  return { limit, offset };
+};
+
+const getPagingData = (data, page, limit) => {
+  const { count: totalItems, rows: cars } = data;
+  const currentPage = page ? +page : 0;
+  const totalPages = Math.ceil(totalItems / limit);
+
+  return { totalItems, cars, totalPages, currentPage };
+};
+
 exports.create = (req, res) => {
   // Validate request
 
@@ -33,8 +48,12 @@ console.log(123);
 
 // Retrieve all Cars from the database.
 exports.findAll = (req, res) => {
+  const { page, size, title } = req.query;
+		
   const searchTerm = req.query.searchTerm;
   const color = req.query.color;
+  const { limit, offset } = getPagination(page, size);
+  
   var condition = {};
 	if(searchTerm) {
 		condition.model = { [Op.like]: `%${searchTerm}%` };
@@ -44,9 +63,10 @@ exports.findAll = (req, res) => {
 	}
 	
 	
-  Car.findAll({ where: condition })
+  Car.findAndCountAll({ where: condition, limit, offset })
     .then(data => {
-      res.send(data);
+	  const response = getPagingData(data, page, limit);
+      res.send(response);
     })
     .catch(err => {
       res.status(500).send({
