@@ -20,7 +20,6 @@ const getPagingData = (data, page, limit) => {
 exports.create = (req, res) => {
   // Validate request
 
-console.log(req.body);
   if (!req.body.model) {
     res.status(400).send({
       message: "Content can not be empty!"
@@ -32,7 +31,6 @@ console.log(req.body);
     model: req.body.model,
     color: req.body.color
   };
-console.log(123);
   // Save Car in the database
   Car.create(car)
     .then(data => {
@@ -45,6 +43,44 @@ console.log(123);
       });
     });
 };
+
+exports.stats = (req, res) => {
+	// Validate request
+	// Create a Car
+	var condition = [];
+	var response = [];
+	response = {
+		'totalCars':0,
+		'redCars':0,
+		'yellowCars':0,
+		'blueCars':0,
+	};
+	Car.findAndCountAll({ where: condition })
+		.then(data => {
+			response.totalCars = data.count;
+		})
+	Car.findAndCountAll({ where: [{color: 'Red'}] })
+		.then(data => {
+			response.redCars = data.count;
+		
+	})
+	Car.findAndCountAll({ where: [{color: 'Yellow'}] })
+		.then(data => {
+			response.yellowCars = data.count;	
+	})
+	Car.findAndCountAll({ where: [{color: 'Blue'}] })
+		.then(data => {
+			response.blueCars = data.count;
+			complete();
+	})
+	function complete() {
+		res.send(response);
+	}
+
+
+};
+
+
 
 // Retrieve all Cars from the database.
 exports.findAll = (req, res) => {

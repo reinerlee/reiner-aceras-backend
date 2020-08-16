@@ -9,8 +9,10 @@ module.exports = app => {
   // Retrieve all Cars
   router.get("/", cars.findAll);
 
+  router.get("/stats", cars.stats);
   // Retrieve a single Car with id
   router.get("/:id", cars.findOne);
+  
 
   // Update a Car with id
   router.put("/:id", cars.update);
